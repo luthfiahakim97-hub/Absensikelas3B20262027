@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Absensi QR Kelas 3B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --paper: #FCFAF5;
+    --ink: #1E2430;
+    --ink-soft: #6B7280;
+    --line: #E4E0D6;
+    --hadir: #1E9E5A;
+    --terlambat: #E8930C;
+    --duplikat: #2E6FD8;
+    --gagal: #D8402E;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: .2px; }
+  header .tahun {
+    font-size: .85rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  header .jam {
+    font-weight: 500;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  #reader-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 2px solid var(--line);
+    background: #10141C;
+    aspect-ratio: 3 / 4;
+  }
+  #reader { width: 100%; height: 100%; }
+  #reader video { object-fit: cover; }
+
+  .hint {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: .95rem;
+    font-weight: 400;
+  }
+
+  .manual-wrap {
+    border: none;
+  }
+  .manual-wrap summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: var(--ink-soft);
+    padding: 6px;
+    user-select: none;
+  }
+  .manual-wrap summary::-webkit-details-marker { display: none; }
+  .manual-wrap summary:focus-visible {
+    outline: 3px solid var(--duplikat);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .manual-wrap summary .chev {
+    transition: transform .2s ease;
+    font-size: .75rem;
+  }
+  .manual-wrap[open] summary .chev { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) {
+    .manual-wrap summary .chev { transition: none; }
+  }
+
+  .manual {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .manual input {
+    flex: 1;
+    font: inherit;
+    font-size: 1.05rem;
+    padding: 13px 16px;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ink);
+    inputmode: numeric;
+  }
+  .manual input:focus-visible,
+  .manual button:focus-visible {
+    outline: 3px solid var(--duplikat);
+    outline-offset: 2px;
+  }
+  .manual button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0 22px;
+    border: none;
+    border-radius: 14px;
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+  }
+  .manual button:active { transform: scale(.97); }
+
+  .counter {
+    text-align: center;
+    font-size: .9rem;
+    color: var(--ink-soft);
+  }
+  .counter b { color: var(--ink); font-weight: 600; }
+
+  /* ── Layar status penuh: terbaca dari jarak satu meter ── */
+  #status {
+    position: fixed;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding: 32px;
+    gap: 10px;
+    z-index: 50;
+  }
+  #status.show { display: flex; animation: pop .25s ease-out; }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(1.04); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #status.show { animation: none; }
+  }
+  #status .icon { font-size: 5.5rem; line-height: 1; }
+  #status .judul { font-size: 2rem; font-weight: 700; }
+  #status .nama { font-size: 1.6rem; font-weight: 600; }
+  #status .detail { font-size: 1.1rem; font-weight: 400; opacity: .92; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Absensi QR Kelas 3B</h1>
+    <div class="tahun">Tahun Ajaran 2026/2027</div>
+  </div>
+  <div class="jam" id="jam">--:--</div>
+</header>
+
+<div id="reader-wrap"><div id="reader"></div></div>
+<p class="hint">Arahkan kartu QR siswa ke kamera</p>
+
+<details class="manual-wrap" id="manualWrap">
+  <summary>Kartu hilang? Ketik NIS manual <span class="chev">▼</span></summary>
+  <div class="manual">
+    <input id="nisManual" type="text" inputmode="numeric" placeholder="Ketik NIS" aria-label="Input NIS manual" />
+    <button id="btnManual">Absen</button>
+  </div>
+</details>
+
+<p class="counter">Scan sesi ini: <b id="count">0</b></p>
+
+<div id="status" role="alert">
+  <div class="icon" id="stIcon"></div>
+  <div class="judul" id="stJudul"></div>
+  <div class="nama" id="stNama"></div>
+  <div class="detail" id="stDetail"></div>
+</div>
+
+<script>
+/* ================================================================
+   GANTI DENGAN URL WEB APP APPS SCRIPT ANDA (yang berakhiran /exec)
+   ================================================================ */
+const SCRIPT_URL = 'https://script.google.com/macros/s/XXXXXXXX/exec';
+
+const WARNA = {
+  hadir:     '#1E9E5A',
+  terlambat: '#E8930C',
+  duplicate: '#2E6FD8',
+  gagal:     '#D8402E'
+};
+
+let scanner = null;
+let sibuk = false;                 // sedang kirim / menampilkan status
+let terakhir = { nis: null, t: 0 }; // anti scan ganda beruntun
+let jumlah = 0;
+
+// Jam header
+setInterval(() => {
+  document.getElementById('jam').textContent =
+    new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}, 1000);
+
+function tampilStatus(warna, icon, judul, nama, detail, durasi) {
+  const el = document.getElementById('status');
+  el.style.background = warna;
+  document.getElementById('stIcon').textContent = icon;
+  document.getElementById('stJudul').textContent = judul;
+  document.getElementById('stNama').textContent = nama || '';
+  document.getElementById('stDetail').textContent = detail || '';
+  el.classList.add('show');
+  if (navigator.vibrate) navigator.vibrate(80);
+  setTimeout(() => {
+    el.classList.remove('show');
+    sibuk = false;
+  }, durasi || 2200);
+}
+
+async function kirim(nis) {
+  nis = String(nis).trim();
+  if (!nis || sibuk) return;
+
+  // Abaikan NIS yang sama dalam 5 detik terakhir (QR masih di depan kamera)
+  const kini = Date.now();
+  if (nis === terakhir.nis && kini - terakhir.t < 5000) return;
+  terakhir = { nis, t: kini };
+  sibuk = true;
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ nis })
+      // Sengaja TANPA header Content-Type agar tidak memicu CORS preflight
+    });
+    const data = await res.json();
+
+    if (data.status === 'ok') {
+      jumlah++;
+      document.getElementById('count').textContent = jumlah;
+      if (data.statusHadir === 'Terlambat') {
+        tampilStatus(WARNA.terlambat, '⏰', 'Terlambat', data.nama,
+          data.kelas + ' · ' + data.jam);
+      } else {
+        tampilStatus(WARNA.hadir, '✓', 'Hadir', data.nama,
+          data.kelas + ' · ' + data.jam);
+      }
+    } else if (data.status === 'duplicate') {
+      tampilStatus(WARNA.duplicate, '🔁', 'Sudah Absen', data.nama,
+        'Tercatat hari ini pukul ' + data.jam);
+    } else if (data.status === 'not_found') {
+      tampilStatus(WARNA.gagal, '✗', 'Tidak Terdaftar',
+        'NIS ' + data.nis, 'Periksa data siswa atau ketik ulang NIS');
+    } else {
+      tampilStatus(WARNA.gagal, '!', 'Gagal', '', data.message || 'Terjadi kesalahan');
+    }
+  } catch (err) {
+    tampilStatus(WARNA.gagal, '📡', 'Tidak Terkirim', '',
+      'Periksa koneksi internet, lalu scan ulang', 3000);
+    terakhir = { nis: null, t: 0 }; // izinkan scan ulang langsung
+  }
+}
+
+// Scanner kamera
+scanner = new Html5Qrcode('reader');
+scanner.start(
+  { facingMode: 'environment' },
+  { fps: 10, qrbox: (w, h) => ({ width: Math.min(w, h) * 0.7, height: Math.min(w, h) * 0.7 }) },
+  (teks) => kirim(teks),
+  () => {} // abaikan frame tanpa QR
+).catch(err => {
+  document.querySelector('.hint').textContent =
+    'Kamera tidak dapat diakses. Izinkan kamera di browser, atau gunakan input NIS manual.';
+});
+
+// Input manual (tersembunyi di balik toggle)
+const manualWrap = document.getElementById('manualWrap');
+const inputNis = document.getElementById('nisManual');
+
+manualWrap.addEventListener('toggle', () => {
+  if (manualWrap.open) inputNis.focus();
+});
+
+function kirimManual() {
+  const nilai = inputNis.value;
+  inputNis.value = '';
+  if (!nilai.trim()) return;
+  manualWrap.open = false; // tutup lagi, kembali ke mode scan
+  kirim(nilai);
+}
+
+document.getElementById('btnManual').addEventListener('click', kirimManual);
+inputNis.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') kirimManual();
+});
+</script>
+</body>
+</html>
