@@ -62,6 +62,37 @@
   #reader { width: 100%; height: 100%; }
   #reader video { object-fit: cover; }
 
+  #btnSwitchCam {
+    /* default disembunyikan — baru dimunculkan lewat JS kalau perangkat
+       terdeteksi punya lebih dari 1 kamera */
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(16, 20, 28, .55);
+    color: #fff;
+    font-size: 1.35rem;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  #btnSwitchCam.tampil { display: flex; }
+  #btnSwitchCam:active { transform: scale(.9); }
+  #btnSwitchCam:disabled { opacity: .5; cursor: default; }
+  #btnSwitchCam:focus-visible {
+    outline: 3px solid var(--duplikat);
+    outline-offset: 2px;
+  }
+
   .hint {
     text-align: center;
     color: var(--ink-soft);
@@ -178,7 +209,10 @@
   <div class="jam" id="jam">--:--</div>
 </header>
 
-<div id="reader-wrap"><div id="reader"></div></div>
+<div id="reader-wrap">
+  <div id="reader"></div>
+  <button id="btnSwitchCam" aria-label="Ganti kamera depan/belakang" title="Ganti kamera">⟲</button>
+</div>
 <p class="hint">Arahkan kartu QR siswa ke kamera</p>
 
 <details class="manual-wrap" id="manualWrap">
@@ -215,6 +249,9 @@ let scanner = null;
 let sibuk = false;                 // sedang kirim / menampilkan status
 let terakhir = { nis: null, t: 0 }; // anti scan ganda beruntun
 let jumlah = 0;
+let daftarKamera = [];      // hasil Html5Qrcode.getCameras() — [{id, label}, ...]
+let indexKameraAktif = 0;
+let sedangGantiKamera = false;
 
 // Jam header
 setInterval(() => {
@@ -283,14 +320,80 @@ async function kirim(nis) {
 
 // Scanner kamera
 scanner = new Html5Qrcode('reader');
-scanner.start(
-  { facingMode: 'environment' },
-  { fps: 10, qrbox: (w, h) => ({ width: Math.min(w, h) * 0.7, height: Math.min(w, h) * 0.7 }) },
-  (teks) => kirim(teks),
-  () => {} // abaikan frame tanpa QR
-).catch(err => {
-  document.querySelector('.hint').textContent =
-    'Kamera tidak dapat diakses. Izinkan kamera di browser, atau gunakan input NIS manual.';
+const btnSwitchCam = document.getElementById('btnSwitchCam');
+
+function konfigScan() {
+  return { fps: 10, qrbox: (w, h) => ({ width: Math.min(w, h) * 0.7, height: Math.min(w, h) * 0.7 }) };
+}
+
+// Mulai kamera pakai deviceId spesifik (dipakai kalau kita sudah tahu daftar kameranya)
+async function mulaiScannerId(deviceId) {
+  try {
+    await scanner.start({ deviceId: { exact: deviceId } }, konfigScan(), (teks) => kirim(teks), () => {});
+    document.querySelector('.hint').textContent = 'Arahkan kartu QR siswa ke kamera';
+  } catch (err) {
+    document.querySelector('.hint').textContent =
+      'Kamera tidak dapat diakses. Izinkan kamera di browser, atau gunakan input NIS manual.';
+  }
+}
+
+// Fallback kalau daftar kamera tidak bisa dibaca (browser lama / permission ditolak)
+async function mulaiScannerFacing(facing) {
+  try {
+    await scanner.start({ facingMode: facing }, konfigScan(), (teks) => kirim(teks), () => {});
+    document.querySelector('.hint').textContent = 'Arahkan kartu QR siswa ke kamera';
+  } catch (err) {
+    document.querySelector('.hint').textContent =
+      'Kamera tidak dapat diakses. Izinkan kamera di browser, atau gunakan input NIS manual.';
+  }
+}
+
+async function siapkanKamera() {
+  try {
+    daftarKamera = await Html5Qrcode.getCameras();
+  } catch (e) {
+    daftarKamera = []; // gagal enumerasi (izin ditolak / browser tidak dukung) → pakai fallback
+  }
+
+  if (daftarKamera.length >= 2) {
+    // Tampilkan tombol switch hanya kalau memang ada >1 kamera untuk dipilih
+    const idxBelakang = daftarKamera.findIndex(k => /back|belakang|rear|environment/i.test(k.label || ''));
+    indexKameraAktif = idxBelakang >= 0 ? idxBelakang : 0;
+    btnSwitchCam.classList.add('tampil');
+    await mulaiScannerId(daftarKamera[indexKameraAktif].id);
+  } else if (daftarKamera.length === 1) {
+    // Cuma 1 kamera terdeteksi → tombol switch disembunyikan, tidak relevan
+    btnSwitchCam.classList.remove('tampil');
+    await mulaiScannerId(daftarKamera[0].id);
+  } else {
+    // Tidak bisa enumerasi kamera sama sekali → fallback ke facingMode, tombol disembunyikan
+    btnSwitchCam.classList.remove('tampil');
+    await mulaiScannerFacing('environment');
+  }
+}
+
+siapkanKamera();
+
+// Tombol ganti kamera (hanya aktif/terlihat kalau ada >=2 kamera)
+btnSwitchCam.addEventListener('click', async () => {
+  if (sedangGantiKamera || daftarKamera.length < 2) return;
+  sedangGantiKamera = true;
+  btnSwitchCam.disabled = true;
+
+  try {
+    const state = scanner.getState ? scanner.getState() : null;
+    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+      await scanner.stop();
+    }
+  } catch (e) {
+    // kamera mungkin belum sempat start, lanjut saja
+  }
+
+  indexKameraAktif = (indexKameraAktif + 1) % daftarKamera.length;
+  await mulaiScannerId(daftarKamera[indexKameraAktif].id);
+
+  btnSwitchCam.disabled = false;
+  sedangGantiKamera = false;
 });
 
 // Input manual (tersembunyi di balik toggle)
