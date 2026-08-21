@@ -3,27 +3,35 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Absensi QR Kelas 3B</title>
+<title>Absen QR Kelas 3B</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root {
     --paper: #FCFAF5;
-    --ink: #1E2430;
-    --ink-soft: #6B7280;
-    --line: #E4E0D6;
+    --ink: #0E3A4A;
+    --ink-soft: #4F7A8A;
+    --line: #CFE8EE;
     --hadir: #1E9E5A;
     --terlambat: #E8930C;
     --duplikat: #2E6FD8;
     --gagal: #D8402E;
+    --susulan: #8B5FBF;
     --radius: 20px;
+    /* ── Palet laut (ornamen/dekorasi saja — warna status di atas TIDAK diubah) ── */
+    --pasir: #FFF7E0;
+    --laut-muda: #BFEAF0;
+    --laut-tengah: #2E9BB5;
+    --laut-dalam: #0B4F6C;
+    --karang: #FF8A5B;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
     font-family: 'Fredoka', system-ui, sans-serif;
-    background: var(--paper);
+    background:
+      radial-gradient(ellipse at top, var(--laut-muda) 0%, var(--pasir) 55%);
     color: var(--ink);
     display: flex;
     flex-direction: column;
@@ -31,40 +39,328 @@
     margin: 0 auto;
     padding: 16px;
     gap: 14px;
+    position: relative;
+    overflow-x: hidden;
   }
 
-  header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+  /* ── Lapisan dekorasi laut: gelombang + gelembung, tidak mengganggu interaksi ── */
+  .dekor-laut {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
   }
-  header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: .2px; }
-  header .tahun {
-    font-size: .85rem;
-    font-weight: 400;
-    color: var(--ink-soft);
-    margin-top: 2px;
+  .dekor-laut svg.gelombang-bawah {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    opacity: .55;
   }
-  header .jam {
-    font-weight: 500;
-    color: var(--ink-soft);
+  .gelembung {
+    position: absolute;
+    bottom: -40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(191,234,240,.25));
+    box-shadow:
+      0 0 0 1.5px rgba(11, 79, 108, .38),
+      0 0 5px rgba(11, 79, 108, .15);
+    animation: naikGelembung linear infinite;
+  }
+  @keyframes naikGelembung {
+    from { transform: translateY(0) translateX(0); opacity: .8; }
+    to   { transform: translateY(-115vh) translateX(10px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gelembung, .mahluk { animation: none !important; }
+  }
+
+  /* ── Karakter laut mengambang di pojok-pojok halaman ── */
+  .dekor-karakter {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .mahluk {
+    position: absolute;
+    filter: drop-shadow(0 4px 5px rgba(11, 79, 108, .2));
+    animation: mengambang ease-in-out infinite;
+  }
+  @keyframes mengambang {
+    0%, 100% { transform: translateY(0) rotate(var(--miring, 0deg)); }
+    50% { transform: translateY(-9px) rotate(var(--miring, 0deg)); }
+  }
+  .lumba-lumba { top: 5%;  left: -20px;  width: 100px; animation-duration: 6.5s; --miring: -6deg; }
+  .kura-kura   { top: 3%;  right: -16px; width: 82px;  animation-duration: 7.5s; animation-delay: .6s; --miring: 4deg; }
+  .gurita      { bottom: 3%; left: -18px; width: 104px; animation-duration: 8s;  animation-delay: 1.1s; }
+  .kepiting    { bottom: 4%; right: -14px; width: 92px; animation-duration: 6s;  animation-delay: .3s; }
+  .ubur-ubur   { top: 32%; right: 2px;    width: 44px;  opacity: .6; animation-duration: 5.5s; animation-delay: .9s; }
+
+  /* ── Header: plakat kayu ala papan nama kelas ── */
+  header.papan-kayu {
+    position: relative;
+    text-align: center;
+    background: repeating-linear-gradient(180deg, #EBC088 0px 9px, #DCA766 9px 11px);
+    border: 3px solid #A66A2E;
+    border-radius: 28px 28px 16px 16px;
+    padding: 16px 20px 30px;
+    box-shadow:
+      0 5px 0 rgba(120, 70, 20, .35),
+      inset 0 2px 0 rgba(255, 255, 255, .35);
+  }
+  header.papan-kayu h1 {
+    font-family: 'Baloo 2', 'Fredoka', system-ui, sans-serif;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: .3px;
+    color: var(--laut-dalam);
+    text-shadow: -1.5px 0 #fff, 1.5px 0 #fff, 0 -1.5px #fff, 0 1.5px #fff;
+    line-height: 1.15;
+  }
+  .pita-kelas {
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    transform: translateX(-50%);
+    background: var(--laut-dalam);
+    color: #fff;
+    font-weight: 700;
+    font-size: .82rem;
+    padding: 7px 24px;
+    border-radius: 999px;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, .18);
+    white-space: nowrap;
+  }
+  .pita-kelas b { color: #FFD84D; }
+  .jam-pelampung {
+    position: absolute;
+    top: -10px;
+    right: 6px;
+    background: #fff;
+    color: var(--laut-dalam);
+    font-weight: 600;
+    font-size: .78rem;
     font-variant-numeric: tabular-nums;
+    padding: 6px 12px;
+    border-radius: 999px;
+    box-shadow: 0 3px 6px rgba(11, 79, 108, .28);
+    border: 2px solid var(--laut-muda);
+  }
+
+  /* ── Kartu tanggal / mode ── */
+  .kartu-tanggal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 10px 12px;
+  }
+  #btnTglTrigger {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    padding: 4px 0;
+    cursor: pointer;
+    text-align: left;
+  }
+  #btnTglTrigger:focus-visible {
+    outline: 3px solid var(--duplikat);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  #btnTglTrigger .ikon-kal { font-size: 1rem; flex-shrink: 0; }
+  #btnTglTrigger span#tglTampil {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .titik-mode {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--hadir);
+  }
+  .titik-mode.susulan { background: var(--susulan); }
+
+  /* ── Pilihan status kehadiran: tombol huruf kompak di sisi kanan ── */
+  .grup-status {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+    border-left: 2px solid var(--line);
+    padding-left: 10px;
+  }
+  .pill-status {
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 700;
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .pill-status:focus-visible {
+    outline: 3px solid var(--duplikat);
+    outline-offset: 2px;
+  }
+  .pill-status[data-status="Hadir"].aktif { background: #E7F6EC; border-color: var(--hadir); color: var(--hadir); }
+  .pill-status[data-status="Izin"].aktif { background: #E7EFFB; border-color: var(--duplikat); color: var(--duplikat); }
+  .pill-status[data-status="Sakit"].aktif { background: #FCEFDD; border-color: var(--terlambat); color: var(--terlambat); }
+  .pill-status[data-status="Alpha"].aktif { background: #FBE7E4; border-color: var(--gagal); color: var(--gagal); }
+
+  /* ── Kalender custom (klik-only, tidak bisa diketik) ── */
+  .kalender-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 36, 48, .4);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 60;
+  }
+  .kalender-overlay.tampil { display: flex; }
+  .kalender-popup {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 22px 22px 0 0;
+    padding: 18px 18px 24px;
+    animation: naik .2s ease-out;
+  }
+  @keyframes naik {
+    from { transform: translateY(12px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kalender-popup { animation: none; }
+  }
+  .kalender-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .kalender-header .judul-bulan {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .kalender-header button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .kalender-header button:disabled { opacity: .3; cursor: default; }
+  .kalender-header button:focus-visible,
+  .grid-hari button:focus-visible {
+    outline: 3px solid var(--duplikat);
+    outline-offset: 2px;
+  }
+  .grid-nama-hari {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .grid-hari {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .grid-hari button {
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    font: inherit;
+    font-size: .95rem;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .grid-hari button.luar-bulan { color: #C9C4B6; }
+  .grid-hari button:disabled { color: #E0DCD0; cursor: default; }
+  .grid-hari button:not(:disabled):active { background: var(--line); }
+  .grid-hari button.hari-ini-sel { border: 2px solid var(--hadir); }
+  .grid-hari button.terpilih { background: var(--ink); color: #fff; }
+  .kalender-footer {
+    margin-top: 14px;
+    text-align: center;
+  }
+  .kalender-footer button {
+    font: inherit;
+    font-weight: 600;
+    font-size: .9rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
   }
 
   #reader-wrap {
     position: relative;
-    border-radius: var(--radius);
+    border-radius: 32px;
     overflow: hidden;
-    border: 2px solid var(--line);
+    border: 7px solid var(--laut-tengah);
+    outline: 3px solid var(--laut-dalam);
+    outline-offset: -1px;
+    box-shadow:
+      0 6px 0 rgba(11, 79, 108, .25),
+      inset 0 0 0 3px rgba(255, 255, 255, .35);
     background: #10141C;
     aspect-ratio: 3 / 4;
   }
+  /* "Baut" porthole di 4 sisi — murni dekoratif */
+  #reader-wrap::before,
+  #reader-wrap::after,
+  #reader-wrap .baut-kiri,
+  #reader-wrap .baut-kanan {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--pasir);
+    box-shadow: 0 0 0 2px var(--laut-dalam);
+    z-index: 6;
+  }
+  #reader-wrap::before { top: 10px; left: 50%; transform: translateX(-50%); }
+  #reader-wrap::after { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  #reader-wrap .baut-kiri { left: 10px; top: 50%; transform: translateY(-50%); }
+  #reader-wrap .baut-kanan { right: 10px; top: 50%; transform: translateY(-50%); }
   #reader { width: 100%; height: 100%; }
   #reader video { object-fit: cover; }
 
   #btnSwitchCam {
-    /* default disembunyikan — baru dimunculkan lewat JS kalau perangkat
-       terdeteksi punya lebih dari 1 kamera */
     display: none;
     position: absolute;
     top: 12px;
@@ -100,9 +396,7 @@
     font-weight: 400;
   }
 
-  .manual-wrap {
-    border: none;
-  }
+  .manual-wrap { border: none; }
   .manual-wrap summary {
     list-style: none;
     display: flex;
@@ -165,13 +459,22 @@
   .manual button:active { transform: scale(.97); }
 
   .counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
     text-align: center;
-    font-size: .9rem;
-    color: var(--ink-soft);
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--laut-dalam);
+    background: var(--pasir);
+    border: 2px solid var(--laut-muda);
+    border-radius: 999px;
+    padding: 9px 16px;
   }
-  .counter b { color: var(--ink); font-weight: 600; }
+  .counter b { color: var(--laut-dalam); font-weight: 700; }
 
-  /* ── Layar status penuh: terbaca dari jarak satu meter ── */
+  /* ── Layar status penuh ── */
   #status {
     position: fixed;
     inset: 0;
@@ -201,29 +504,147 @@
 </head>
 <body>
 
-<header>
-  <div>
-    <h1>Absensi QR Kelas 3B</h1>
-    <div class="tahun">Tahun Ajaran 2026/2027</div>
-  </div>
-  <div class="jam" id="jam">--:--</div>
+<div class="dekor-laut" aria-hidden="true">
+  <svg class="gelombang-bawah" viewBox="0 0 480 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,40 C60,10 120,10 180,35 C240,60 300,60 360,35 C400,18 440,18 480,32 L480,90 L0,90 Z" fill="#2E9BB5" opacity="0.35"/>
+    <path d="M0,55 C70,30 130,30 190,50 C250,70 310,70 370,48 C410,34 445,34 480,48 L480,90 L0,90 Z" fill="#0B4F6C" opacity="0.28"/>
+  </svg>
+  <div class="gelembung" style="left:8%; width:14px; height:14px; animation-duration:9s; animation-delay:0s;"></div>
+  <div class="gelembung" style="left:22%; width:9px;  height:9px;  animation-duration:7s; animation-delay:1.5s;"></div>
+  <div class="gelembung" style="left:38%; width:16px; height:16px; animation-duration:11s; animation-delay:3s;"></div>
+  <div class="gelembung" style="left:55%; width:8px;  height:8px;  animation-duration:6.5s; animation-delay:.8s;"></div>
+  <div class="gelembung" style="left:70%; width:12px; height:12px; animation-duration:10s; animation-delay:2.2s;"></div>
+  <div class="gelembung" style="left:85%; width:10px; height:10px; animation-duration:8s; animation-delay:4s;"></div>
+</div>
+
+<div class="dekor-karakter" aria-hidden="true">
+  <!-- Lumba-lumba -->
+  <svg class="mahluk lumba-lumba" viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+    <g transform="rotate(-12 70 60)">
+      <ellipse cx="70" cy="62" rx="42" ry="24" fill="#5B8FC7"/>
+      <ellipse cx="30" cy="58" rx="16" ry="11" fill="#5B8FC7"/>
+      <ellipse cx="76" cy="73" rx="24" ry="11" fill="#EAF6FB"/>
+      <path d="M55 40 Q62 18 73 40 Z" fill="#3E6EA5"/>
+      <path d="M106 54 Q128 42 132 58 Q120 61 111 63 Z" fill="#5B8FC7"/>
+      <path d="M106 68 Q128 78 132 58 Q118 59 111 63 Z" fill="#3E6EA5"/>
+      <path d="M58 78 Q66 92 78 80 Q68 76 58 78 Z" fill="#3E6EA5"/>
+      <circle cx="34" cy="54" r="3.4" fill="#16324A"/>
+      <path d="M27 62 Q34 67 41 62" stroke="#16324A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="25" cy="60" r="4.5" fill="#FF9FB3" opacity=".55"/>
+    </g>
+  </svg>
+
+  <!-- Kura-kura -->
+  <svg class="mahluk kura-kura" viewBox="0 0 130 120" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="65" cy="65" rx="40" ry="32" fill="#6FA84B"/>
+    <path d="M65 35 L84 51 L84 80 L65 96 L46 80 L46 51 Z" fill="#4F8C3B" stroke="#3B6B2C" stroke-width="2"/>
+    <path d="M65 35 L65 96 M46 51 L84 51 M46 80 L84 80" stroke="#3B6B2C" stroke-width="1.4"/>
+    <ellipse cx="28" cy="62" rx="15" ry="12" fill="#8BC168"/>
+    <circle cx="21" cy="59" r="3.2" fill="#16324A"/>
+    <path d="M19 68 Q26 72 32 68" stroke="#16324A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="43" cy="99" rx="10" ry="6" fill="#8BC168"/>
+    <ellipse cx="87" cy="99" rx="10" ry="6" fill="#8BC168"/>
+    <ellipse cx="103" cy="55" rx="9" ry="7" fill="#8BC168"/>
+  </svg>
+
+  <!-- Gurita -->
+  <svg class="mahluk gurita" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30 78 Q19 100 27 119 Q36 108 40 91 Z" fill="#F0917A"/>
+    <path d="M49 87 Q45 112 54 127 Q60 111 59 93 Z" fill="#EA8268"/>
+    <path d="M70 90 Q69 117 70 129 Q78 114 78 92 Z" fill="#F0917A"/>
+    <path d="M91 87 Q97 112 88 127 Q82 111 82 93 Z" fill="#EA8268"/>
+    <path d="M110 78 Q122 100 113 119 Q104 108 100 91 Z" fill="#F0917A"/>
+    <ellipse cx="70" cy="55" rx="42" ry="36" fill="#F0917A"/>
+    <circle cx="55" cy="50" r="10.5" fill="#FFFFFF"/>
+    <circle cx="56" cy="51" r="5.4" fill="#16324A"/>
+    <circle cx="85" cy="50" r="10.5" fill="#FFFFFF"/>
+    <circle cx="84" cy="51" r="5.4" fill="#16324A"/>
+    <path d="M57 68 Q70 76 83 68" stroke="#8C3F2C" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <circle cx="45" cy="62" r="5.5" fill="#FF9FB3" opacity=".5"/>
+    <circle cx="95" cy="62" r="5.5" fill="#FF9FB3" opacity=".5"/>
+  </svg>
+
+  <!-- Kepiting -->
+  <svg class="mahluk kepiting" viewBox="0 0 150 110" xmlns="http://www.w3.org/2000/svg">
+    <path d="M45 88 L36 101 M55 92 L48 105 M95 92 L102 105 M105 88 L114 101" stroke="#D8402E" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M30 35 Q18 20 6 27 Q13 41 26 45 Q15 47 9 58 Q26 61 35 49 Z" fill="#D8402E"/>
+    <path d="M120 35 Q132 20 144 27 Q137 41 124 45 Q135 47 141 58 Q124 61 115 49 Z" fill="#D8402E"/>
+    <ellipse cx="75" cy="65" rx="42" ry="26" fill="#F0512E"/>
+    <circle cx="30" cy="35" r="14" fill="#F0512E"/>
+    <circle cx="120" cy="35" r="14" fill="#F0512E"/>
+    <circle cx="60" cy="46" r="9.5" fill="#FFFFFF"/>
+    <circle cx="60" cy="47" r="4.8" fill="#16324A"/>
+    <circle cx="90" cy="46" r="9.5" fill="#FFFFFF"/>
+    <circle cx="90" cy="47" r="4.8" fill="#16324A"/>
+    <path d="M61 66 Q75 74 89 66" stroke="#8C1F12" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  </svg>
+
+  <!-- Ubur-ubur -->
+  <svg class="mahluk ubur-ubur" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 55 Q15 15 50 15 Q85 15 85 55 Q70 66 50 61 Q30 66 15 55 Z" fill="#F3A6D6" opacity=".85"/>
+    <circle cx="35" cy="37" r="4" fill="#FFFFFF" opacity=".6"/>
+    <circle cx="62" cy="32" r="3" fill="#FFFFFF" opacity=".6"/>
+    <path d="M25 61 Q22 82 28 100" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M42 63 Q40 86 46 106" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M60 63 Q62 86 56 106" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M76 61 Q79 82 73 100" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+  </svg>
+</div>
+
+<header class="papan-kayu">
+  <h1>🐬 Absen QR Kelas 3B</h1>
+  <div class="pita-kelas">Tahun Ajaran <b>2026/2027</b></div>
+  <div class="jam-pelampung" id="jam">--:--</div>
 </header>
+
+<div class="kartu-tanggal">
+  <button type="button" id="btnTglTrigger" aria-haspopup="dialog">
+    <span class="ikon-kal">📅</span>
+    <span class="titik-mode" id="titikMode" title="Hari ini"></span>
+    <span id="tglTampil">21 Agustus 2026</span>
+  </button>
+  <div class="grup-status" id="kartuStatus" role="radiogroup" aria-label="Status kehadiran">
+    <button type="button" class="pill-status aktif" data-status="Hadir" role="radio" aria-checked="true" title="Hadir">H</button>
+    <button type="button" class="pill-status" data-status="Izin" role="radio" aria-checked="false" title="Izin">I</button>
+    <button type="button" class="pill-status" data-status="Sakit" role="radio" aria-checked="false" title="Sakit">S</button>
+    <button type="button" class="pill-status" data-status="Alpha" role="radio" aria-checked="false" title="Alpha">A</button>
+  </div>
+</div>
+
+<div class="kalender-overlay" id="kalenderOverlay">
+  <div class="kalender-popup" role="dialog" aria-modal="true" aria-label="Pilih tanggal absensi">
+    <div class="kalender-header">
+      <button type="button" id="btnBulanMundur" aria-label="Bulan sebelumnya">‹</button>
+      <span class="judul-bulan" id="judulBulan">Agustus 2026</span>
+      <button type="button" id="btnBulanMaju" aria-label="Bulan berikutnya">›</button>
+    </div>
+    <div class="grid-nama-hari">
+      <span>M</span><span>S</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span>
+    </div>
+    <div class="grid-hari" id="gridHari"></div>
+    <div class="kalender-footer">
+      <button type="button" id="btnHariIniKal">Hari ini</button>
+    </div>
+  </div>
+</div>
 
 <div id="reader-wrap">
   <div id="reader"></div>
+  <span class="baut-kiri" aria-hidden="true"></span>
+  <span class="baut-kanan" aria-hidden="true"></span>
   <button id="btnSwitchCam" aria-label="Ganti kamera depan/belakang" title="Ganti kamera">⟲</button>
 </div>
-<p class="hint">Arahkan kartu QR siswa ke kamera</p>
+<p class="hint">Arahkan kartu QR siswa ke kamera 🐠</p>
 
 <details class="manual-wrap" id="manualWrap">
-  <summary>Kartu hilang? Ketik NIS manual <span class="chev">▼</span></summary>
+  <summary>🐚 Kartu hilang? Ketik NIS manual <span class="chev">▼</span></summary>
   <div class="manual">
     <input id="nisManual" type="text" inputmode="numeric" placeholder="Ketik NIS" aria-label="Input NIS manual" />
     <button id="btnManual">Absen</button>
   </div>
 </details>
 
-<p class="counter">Scan sesi ini: <b id="count">0</b></p>
+<p class="counter">⭐ Scan sesi ini: <b id="count">0</b></p>
 
 <div id="status" role="alert">
   <div class="icon" id="stIcon"></div>
@@ -241,17 +662,159 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKIY7QntPKU_52IU0OR
 const WARNA = {
   hadir:     '#1E9E5A',
   terlambat: '#E8930C',
+  susulan:   '#8B5FBF',
   duplicate: '#2E6FD8',
   gagal:     '#D8402E'
 };
 
+const TAMPILAN_STATUS = {
+  Hadir: { warna: '#1E9E5A', icon: '✓' },
+  Izin:  { warna: '#2E6FD8', icon: '📄' },
+  Sakit: { warna: '#E8930C', icon: '🤒' },
+  Alpha: { warna: '#D8402E', icon: '✗' }
+};
+
 let scanner = null;
-let sibuk = false;                 // sedang kirim / menampilkan status
-let terakhir = { nis: null, t: 0 }; // anti scan ganda beruntun
+let sibuk = false;
+let terakhir = { nis: null, t: 0 };
 let jumlah = 0;
-let daftarKamera = [];      // hasil Html5Qrcode.getCameras() — [{id, label}, ...]
+let daftarKamera = [];
 let indexKameraAktif = 0;
 let sedangGantiKamera = false;
+
+// ── Tanggal helper: format lokal yyyy-MM-dd (hindari pergeseran timezone dari toISOString) ──
+function formatTanggalLokal(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+const titikMode = document.getElementById('titikMode');
+const btnTglTrigger = document.getElementById('btnTglTrigger');
+const tglTampil = document.getElementById('tglTampil');
+const kalenderOverlay = document.getElementById('kalenderOverlay');
+const judulBulan = document.getElementById('judulBulan');
+const gridHari = document.getElementById('gridHari');
+const btnBulanMundur = document.getElementById('btnBulanMundur');
+const btnBulanMaju = document.getElementById('btnBulanMaju');
+const btnHariIniKal = document.getElementById('btnHariIniKal');
+
+const NAMA_BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+const hariIniStr = formatTanggalLokal(new Date());
+
+// "tglInput" adalah objek pengganti <input type="date"> — nilainya HANYA bisa
+// diubah lewat kalender klik-only ini, tidak ada jalur untuk mengetik teks.
+const tglInput = { value: hariIniStr };
+
+let bulanTampil = new Date().getMonth();
+let tahunTampil = new Date().getFullYear();
+
+function formatTampil(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return `${d} ${NAMA_BULAN[m - 1]} ${y}`;
+}
+
+function perbaruiModeTanggal() {
+  tglTampil.textContent = formatTampil(tglInput.value);
+  const isSusulan = tglInput.value !== hariIniStr;
+  if (isSusulan) {
+    titikMode.classList.add('susulan');
+    titikMode.title = 'Susulan (bukan hari ini)';
+  } else {
+    titikMode.classList.remove('susulan');
+    titikMode.title = 'Hari ini';
+  }
+}
+perbaruiModeTanggal();
+
+function renderKalender() {
+  judulBulan.textContent = `${NAMA_BULAN[bulanTampil]} ${tahunTampil}`;
+
+  const skrg = new Date();
+  const batasMaju = tahunTampil > skrg.getFullYear() ||
+    (tahunTampil === skrg.getFullYear() && bulanTampil >= skrg.getMonth());
+  btnBulanMaju.disabled = batasMaju;
+
+  gridHari.innerHTML = '';
+  const hariPertama = new Date(tahunTampil, bulanTampil, 1).getDay();
+  const jumlahHari = new Date(tahunTampil, bulanTampil + 1, 0).getDate();
+  const jumlahHariBulanLalu = new Date(tahunTampil, bulanTampil, 0).getDate();
+
+  // Sel bulan sebelumnya (abu-abu, tidak bisa diklik — cuma pengisi grid)
+  for (let i = hariPertama - 1; i >= 0; i--) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.disabled = true;
+    btn.className = 'luar-bulan';
+    btn.textContent = jumlahHariBulanLalu - i;
+    gridHari.appendChild(btn);
+  }
+
+  for (let d = 1; d <= jumlahHari; d++) {
+    const str = `${tahunTampil}-${String(bulanTampil + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = d;
+    if (str > hariIniStr) btn.disabled = true; // larang tanggal masa depan
+    if (str === hariIniStr) btn.classList.add('hari-ini-sel');
+    if (str === tglInput.value) btn.classList.add('terpilih');
+    btn.addEventListener('click', () => {
+      tglInput.value = str;
+      perbaruiModeTanggal();
+      tutupKalender();
+    });
+    gridHari.appendChild(btn);
+  }
+}
+
+function bukaKalender() {
+  const [y, m] = tglInput.value.split('-').map(Number);
+  tahunTampil = y;
+  bulanTampil = m - 1;
+  renderKalender();
+  kalenderOverlay.classList.add('tampil');
+}
+function tutupKalender() {
+  kalenderOverlay.classList.remove('tampil');
+}
+
+btnTglTrigger.addEventListener('click', bukaKalender);
+kalenderOverlay.addEventListener('click', (e) => {
+  if (e.target === kalenderOverlay) tutupKalender();
+});
+btnBulanMundur.addEventListener('click', () => {
+  bulanTampil--;
+  if (bulanTampil < 0) { bulanTampil = 11; tahunTampil--; }
+  renderKalender();
+});
+btnBulanMaju.addEventListener('click', () => {
+  if (btnBulanMaju.disabled) return;
+  bulanTampil++;
+  if (bulanTampil > 11) { bulanTampil = 0; tahunTampil++; }
+  renderKalender();
+});
+btnHariIniKal.addEventListener('click', () => {
+  tglInput.value = hariIniStr;
+  perbaruiModeTanggal();
+  tutupKalender();
+});
+
+// ── Pilihan status kehadiran (Hadir/Izin/Sakit/Alpha) ──
+const statusInput = { value: 'Hadir' };
+const pillStatus = document.querySelectorAll('.pill-status');
+pillStatus.forEach(btn => {
+  btn.addEventListener('click', () => {
+    pillStatus.forEach(b => {
+      b.classList.remove('aktif');
+      b.setAttribute('aria-checked', 'false');
+    });
+    btn.classList.add('aktif');
+    btn.setAttribute('aria-checked', 'true');
+    statusInput.value = btn.dataset.status;
+  });
+});
 
 // Jam header
 setInterval(() => {
@@ -278,43 +841,57 @@ async function kirim(nis) {
   nis = String(nis).trim();
   if (!nis || sibuk) return;
 
-  // Abaikan NIS yang sama dalam 5 detik terakhir (QR masih di depan kamera)
+  const tanggalDipilih = tglInput.value || hariIniStr;
+
+  // Anti scan ganda beruntun, dibedakan per tanggal juga
+  const kunciAnti = nis + '|' + tanggalDipilih;
   const kini = Date.now();
-  if (nis === terakhir.nis && kini - terakhir.t < 5000) return;
-  terakhir = { nis, t: kini };
+  if (kunciAnti === terakhir.nis && kini - terakhir.t < 5000) return;
+  terakhir = { nis: kunciAnti, t: kini };
   sibuk = true;
 
   try {
+    const body = { nis, tanggal: tanggalDipilih, status: statusInput.value };
+
     const res = await fetch(SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({ nis })
+      body: JSON.stringify(body)
       // Sengaja TANPA header Content-Type agar tidak memicu CORS preflight
     });
     const data = await res.json();
 
-    if (data.status === 'ok') {
+    if (data.status === 'ok' || data.status === 'duplicate') {
+      // Backend SELALU catat baris baru di kedua kasus ini — 'duplicate' di sini
+      // cuma penanda "sudah ada log sebelumnya di tanggal yang sama", bukan penolakan.
       jumlah++;
       document.getElementById('count').textContent = jumlah;
-      if (data.statusHadir === 'Terlambat') {
-        tampilStatus(WARNA.terlambat, '⏰', 'Terlambat', data.nama,
-          data.kelas + ' · ' + data.jam);
+      const isSusulanTampil = tanggalDipilih !== hariIniStr;
+      const infoStatus = TAMPILAN_STATUS[data.statusHadir] || TAMPILAN_STATUS.Hadir;
+      const judul = data.statusHadir + (isSusulanTampil ? ' (Susulan)' : '');
+
+      let detail;
+      if (data.sebelumnya) {
+        // Ada log sebelumnya di tanggal ini → tampilkan perubahannya
+        detail = data.kelas + ' · Sebelumnya ' + data.sebelumnya.status +
+          ' pukul ' + data.sebelumnya.jam + ' → kini ' + data.statusHadir +
+          ' pukul ' + data.jam;
       } else {
-        tampilStatus(WARNA.hadir, '✓', 'Hadir', data.nama,
-          data.kelas + ' · ' + data.jam);
+        detail = data.kelas + ' · ' + (isSusulanTampil ? (data.tanggal || tanggalDipilih) : data.jam);
       }
-    } else if (data.status === 'duplicate') {
-      tampilStatus(WARNA.duplicate, '🔁', 'Sudah Absen', data.nama,
-        'Tercatat hari ini pukul ' + data.jam);
+
+      tampilStatus(infoStatus.warna, infoStatus.icon, judul, data.nama, detail,
+        data.sebelumnya ? 3200 : 2200); // kasih waktu baca lebih lama kalau ada keterangan tambahan
     } else if (data.status === 'not_found') {
       tampilStatus(WARNA.gagal, '✗', 'Tidak Terdaftar',
         'NIS ' + data.nis, 'Periksa data siswa atau ketik ulang NIS');
     } else {
       tampilStatus(WARNA.gagal, '!', 'Gagal', '', data.message || 'Terjadi kesalahan');
+      terakhir = { nis: null, t: 0 }; // izinkan coba lagi (mis. PIN salah)
     }
   } catch (err) {
     tampilStatus(WARNA.gagal, '📡', 'Tidak Terkirim', '',
       'Periksa koneksi internet, lalu scan ulang', 3000);
-    terakhir = { nis: null, t: 0 }; // izinkan scan ulang langsung
+    terakhir = { nis: null, t: 0 };
   }
 }
 
@@ -326,7 +903,6 @@ function konfigScan() {
   return { fps: 10, qrbox: (w, h) => ({ width: Math.min(w, h) * 0.7, height: Math.min(w, h) * 0.7 }) };
 }
 
-// Mulai kamera pakai deviceId spesifik (dipakai kalau kita sudah tahu daftar kameranya)
 async function mulaiScannerId(deviceId) {
   try {
     await scanner.start({ deviceId: { exact: deviceId } }, konfigScan(), (teks) => kirim(teks), () => {});
@@ -337,7 +913,6 @@ async function mulaiScannerId(deviceId) {
   }
 }
 
-// Fallback kalau daftar kamera tidak bisa dibaca (browser lama / permission ditolak)
 async function mulaiScannerFacing(facing) {
   try {
     await scanner.start({ facingMode: facing }, konfigScan(), (teks) => kirim(teks), () => {});
@@ -352,21 +927,18 @@ async function siapkanKamera() {
   try {
     daftarKamera = await Html5Qrcode.getCameras();
   } catch (e) {
-    daftarKamera = []; // gagal enumerasi (izin ditolak / browser tidak dukung) → pakai fallback
+    daftarKamera = [];
   }
 
   if (daftarKamera.length >= 2) {
-    // Tampilkan tombol switch hanya kalau memang ada >1 kamera untuk dipilih
     const idxBelakang = daftarKamera.findIndex(k => /back|belakang|rear|environment/i.test(k.label || ''));
     indexKameraAktif = idxBelakang >= 0 ? idxBelakang : 0;
     btnSwitchCam.classList.add('tampil');
     await mulaiScannerId(daftarKamera[indexKameraAktif].id);
   } else if (daftarKamera.length === 1) {
-    // Cuma 1 kamera terdeteksi → tombol switch disembunyikan, tidak relevan
     btnSwitchCam.classList.remove('tampil');
     await mulaiScannerId(daftarKamera[0].id);
   } else {
-    // Tidak bisa enumerasi kamera sama sekali → fallback ke facingMode, tombol disembunyikan
     btnSwitchCam.classList.remove('tampil');
     await mulaiScannerFacing('environment');
   }
@@ -374,7 +946,6 @@ async function siapkanKamera() {
 
 siapkanKamera();
 
-// Tombol ganti kamera (hanya aktif/terlihat kalau ada >=2 kamera)
 btnSwitchCam.addEventListener('click', async () => {
   if (sedangGantiKamera || daftarKamera.length < 2) return;
   sedangGantiKamera = true;
@@ -385,9 +956,7 @@ btnSwitchCam.addEventListener('click', async () => {
     if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
       await scanner.stop();
     }
-  } catch (e) {
-    // kamera mungkin belum sempat start, lanjut saja
-  }
+  } catch (e) {}
 
   indexKameraAktif = (indexKameraAktif + 1) % daftarKamera.length;
   await mulaiScannerId(daftarKamera[indexKameraAktif].id);
@@ -396,7 +965,7 @@ btnSwitchCam.addEventListener('click', async () => {
   sedangGantiKamera = false;
 });
 
-// Input manual (tersembunyi di balik toggle)
+// Input manual
 const manualWrap = document.getElementById('manualWrap');
 const inputNis = document.getElementById('nisManual');
 
@@ -408,7 +977,7 @@ function kirimManual() {
   const nilai = inputNis.value;
   inputNis.value = '';
   if (!nilai.trim()) return;
-  manualWrap.open = false; // tutup lagi, kembali ke mode scan
+  manualWrap.open = false;
   kirim(nilai);
 }
 
