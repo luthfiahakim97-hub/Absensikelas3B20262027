@@ -516,10 +516,12 @@
     margin-top: 6px;
     width: 100%;
     max-width: 320px;
+    max-height: 240px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     background: rgba(255, 255, 255, .18);
     border: 1.5px solid rgba(255, 255, 255, .4);
     border-radius: 14px;
-    overflow: hidden;
     font-size: .92rem;
   }
   .riwayat-tabel.tampil { display: block; }
@@ -528,12 +530,17 @@
     padding: 7px 10px;
     text-align: left;
   }
-  .riwayat-tabel th {
+  .riwayat-tabel thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     font-weight: 600;
     font-size: .78rem;
     text-transform: uppercase;
     letter-spacing: .3px;
-    opacity: .85;
+    background: rgba(0, 0, 0, .18);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     border-bottom: 1.5px solid rgba(255, 255, 255, .35);
   }
   .riwayat-tabel td { border-bottom: 1px solid rgba(255, 255, 255, .2); }
@@ -882,8 +889,10 @@ function tampilStatus(warna, icon, judul, nama, detail, durasi, riwayat) {
   document.getElementById('stDetail').textContent = detail || '';
 
   if (riwayat && riwayat.length) {
-    tabelBody.innerHTML = riwayat.map((r, i) => {
-      const terbaru = i === riwayat.length - 1;
+    // Tampilkan terbalik: yang paling BARU di baris paling atas
+    const riwayatTerbalik = riwayat.slice().reverse();
+    tabelBody.innerHTML = riwayatTerbalik.map((r, i) => {
+      const terbaru = i === 0; // setelah dibalik, indeks 0 = paling baru
       return '<tr' + (terbaru ? ' class="baris-terbaru"' : '') + '>' +
         '<td>' + r.jam + '</td><td>' + r.status + '</td></tr>';
     }).join('');
