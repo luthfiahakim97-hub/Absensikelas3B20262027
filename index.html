@@ -341,11 +341,12 @@
     cursor: pointer;
   }
 
-  #reader-wrap {
+  /* ── Bingkai luar porthole: TIDAK dipotong (overflow visible), jadi rumah
+       untuk kilau kaca + baut supaya efeknya nyambung sampai ke tepi bingkai ── */
+  .reader-shell {
     position: relative;
     z-index: 1;
     border-radius: 32px;
-    overflow: hidden;
     border: 7px solid var(--laut-tengah);
     outline: 3px solid var(--laut-dalam);
     outline-offset: -1px;
@@ -355,11 +356,18 @@
     background: #10141C;
     aspect-ratio: 3 / 4;
   }
-  /* "Baut" porthole di 4 sisi — murni dekoratif */
-  #reader-wrap::before,
-  #reader-wrap::after,
-  #reader-wrap .baut-kiri,
-  #reader-wrap .baut-kanan {
+  /* ── Lapisan dalam: khusus video kamera, DIPOTONG rapi mengikuti sudut membulat ── */
+  #reader-wrap {
+    position: absolute;
+    inset: 0;
+    border-radius: 25px; /* sedikit lebih kecil dari shell (32px) supaya pas di dalam border 7px */
+    overflow: hidden;
+  }
+  /* "Baut" porthole di 4 sisi — murni dekoratif, di shell supaya tidak ikut terpotong */
+  .reader-shell::before,
+  .reader-shell::after,
+  .reader-shell .baut-kiri,
+  .reader-shell .baut-kanan {
     content: '';
     position: absolute;
     width: 9px;
@@ -369,12 +377,62 @@
     box-shadow: 0 0 0 2px var(--laut-dalam);
     z-index: 6;
   }
-  #reader-wrap::before { top: 10px; left: 50%; transform: translateX(-50%); }
-  #reader-wrap::after { bottom: 10px; left: 50%; transform: translateX(-50%); }
-  #reader-wrap .baut-kiri { left: 10px; top: 50%; transform: translateY(-50%); }
-  #reader-wrap .baut-kanan { right: 10px; top: 50%; transform: translateY(-50%); }
+  .reader-shell::before { top: 10px; left: 50%; transform: translateX(-50%); }
+  .reader-shell::after { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  .reader-shell .baut-kiri { left: 10px; top: 50%; transform: translateY(-50%); }
+  .reader-shell .baut-kanan { right: 10px; top: 50%; transform: translateY(-50%); }
   #reader { width: 100%; height: 100%; }
   #reader video { object-fit: cover; }
+
+  /* ── Efek kilau kaca porthole: gradasi diagonal tipis ala pantulan cahaya di kaca.
+       Ditaruh di .reader-shell (bukan #reader-wrap) supaya TIDAK terpotong —
+       kilau menyapu sampai ke bingkai biru & baut, bukan cuma area kamera.
+       Dibuat cukup transparan supaya tidak memecah fokus anak saat scan. ── */
+  .kaca-kilau {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    pointer-events: none;
+    border-radius: 32px;
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, .14) 0%,
+      rgba(255, 255, 255, .05) 22%,
+      rgba(255, 255, 255, 0) 38%);
+  }
+
+  /* ── Target scan QR custom (menggantikan kotak bawaan library, supaya bisa
+       diatur bebas: lebar garis, warna, radius — konsisten dengan tema laut) ── */
+  .target-qr {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 66%;
+    aspect-ratio: 1 / 1;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .target-qr .sudut {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    border: 0 solid #fff;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, .5));
+    transition: border-color .15s ease;
+  }
+  /* Lebar garis siku diatur di sini — tinggal ganti angkanya kalau mau lebih tebal/tipis */
+  .target-qr .sudut { --lebar-garis: 6px; }
+  .target-qr .kiri-atas   { top: 0;    left: 0;   border-top-width: var(--lebar-garis);    border-left-width: var(--lebar-garis);  border-top-left-radius: 14px; }
+  .target-qr .kanan-atas  { top: 0;    right: 0;  border-top-width: var(--lebar-garis);    border-right-width: var(--lebar-garis); border-top-right-radius: 14px; }
+  .target-qr .kiri-bawah  { bottom: 0; left: 0;   border-bottom-width: var(--lebar-garis); border-left-width: var(--lebar-garis);  border-bottom-left-radius: 14px; }
+  .target-qr .kanan-bawah { bottom: 0; right: 0;  border-bottom-width: var(--lebar-garis); border-right-width: var(--lebar-garis); border-bottom-right-radius: 14px; }
+  /* Kedip hijau sesaat begitu QR berhasil terbaca — dikontrol via JS, bukan bawaan library */
+  .target-qr.terdeteksi .sudut {
+    border-color: var(--hadir) !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .target-qr .sudut { transition: none; }
+  }
 
   #btnSwitchCam {
     display: none;
@@ -697,11 +755,20 @@
   </div>
 </div>
 
-<div id="reader-wrap">
-  <div id="reader"></div>
+<div class="reader-shell">
+  <div id="reader-wrap">
+    <div id="reader"></div>
+    <div class="target-qr" aria-hidden="true">
+      <span class="sudut kiri-atas"></span>
+      <span class="sudut kanan-atas"></span>
+      <span class="sudut kiri-bawah"></span>
+      <span class="sudut kanan-bawah"></span>
+    </div>
+    <button id="btnSwitchCam" aria-label="Ganti kamera depan/belakang" title="Ganti kamera">⟲</button>
+  </div>
   <span class="baut-kiri" aria-hidden="true"></span>
   <span class="baut-kanan" aria-hidden="true"></span>
-  <button id="btnSwitchCam" aria-label="Ganti kamera depan/belakang" title="Ganti kamera">⟲</button>
+  <div class="kaca-kilau" aria-hidden="true"></div>
 </div>
 <p class="hint">Arahkan kartu QR siswa ke kamera 🐠</p>
 
@@ -988,12 +1055,26 @@ scanner = new Html5Qrcode('reader');
 const btnSwitchCam = document.getElementById('btnSwitchCam');
 
 function konfigScan() {
-  return { fps: 10, qrbox: (w, h) => ({ width: Math.min(w, h) * 0.7, height: Math.min(w, h) * 0.7 }) };
+  // qrbox SENGAJA tidak dipakai — kotak siku bawaan library digantikan overlay
+  // custom kita (.target-qr) yang lebar garis & warnanya bisa kita atur bebas.
+  return { fps: 10 };
+}
+
+// Kedipkan target QR jadi hijau sesaat begitu berhasil terbaca —
+// ini kita buat sendiri, tidak bergantung ke behavior bawaan library.
+function kedipkanTarget() {
+  const target = document.querySelector('.target-qr');
+  if (!target) return;
+  target.classList.add('terdeteksi');
+  setTimeout(() => target.classList.remove('terdeteksi'), 500);
 }
 
 async function mulaiScannerId(deviceId) {
   try {
-    await scanner.start({ deviceId: { exact: deviceId } }, konfigScan(), (teks) => kirim(teks), () => {});
+    await scanner.start({ deviceId: { exact: deviceId } }, konfigScan(), (teks) => {
+      kedipkanTarget();
+      kirim(teks);
+    }, () => {});
     document.querySelector('.hint').textContent = 'Arahkan kartu QR siswa ke kamera';
   } catch (err) {
     document.querySelector('.hint').textContent =
@@ -1003,7 +1084,10 @@ async function mulaiScannerId(deviceId) {
 
 async function mulaiScannerFacing(facing) {
   try {
-    await scanner.start({ facingMode: facing }, konfigScan(), (teks) => kirim(teks), () => {});
+    await scanner.start({ facingMode: facing }, konfigScan(), (teks) => {
+      kedipkanTarget();
+      kirim(teks);
+    }, () => {});
     document.querySelector('.hint').textContent = 'Arahkan kartu QR siswa ke kamera';
   } catch (err) {
     document.querySelector('.hint').textContent =
