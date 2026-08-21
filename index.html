@@ -87,21 +87,30 @@
     overflow: hidden;
     pointer-events: none;
   }
+  /* ── Kura-kura & kepiting: SENGAJA di lapisan TERPISAH dengan z-index tinggi,
+     supaya keduanya tampil PALING DEPAN, menimpa kartu-kartu di bawahnya ── */
+  .dekor-depan {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    overflow: hidden;
+    pointer-events: none;
+  }
   .mahluk {
     position: absolute;
-    filter: drop-shadow(0 4px 5px rgba(11, 79, 108, .2));
+    filter: drop-shadow(0 4px 5px rgba(11, 79, 108, .25));
     animation: mengambang ease-in-out infinite;
   }
   @keyframes mengambang {
     0%, 100% { transform: translateY(0) rotate(var(--miring, 0deg)); }
     50% { transform: translateY(-9px) rotate(var(--miring, 0deg)); }
   }
-  /* Digeser lebih ke luar & lebih tinggi supaya tidak menabrak sudut plakat header */
   .lumba-lumba { top: -1%;  left: -30px;  width: 96px;  animation-duration: 6.5s; --miring: -6deg; }
-  .kura-kura   { top: -2%;  right: -26px; width: 78px;  animation-duration: 7.5s; animation-delay: .6s; --miring: 4deg; }
-  .gurita      { bottom: 3%; left: -18px; width: 104px; animation-duration: 8s;  animation-delay: 1.1s; }
-  .kepiting    { bottom: 4%; right: -14px; width: 92px; animation-duration: 6s;  animation-delay: .3s; }
+  .gurita      { bottom: 1%;  left: -34px;  width: 92px; animation-duration: 8s;  animation-delay: 1.1s; }
   .ubur-ubur   { top: 32%; right: 2px;    width: 44px;  opacity: .6; animation-duration: 5.5s; animation-delay: .9s; }
+  /* Kura-kura & kepiting: di dekor-depan, tampil paling depan menimpa kartu */
+  .kura-kura   { top: 2%;   right: -6px;  width: 74px; animation-duration: 7.5s; animation-delay: .6s; --miring: 4deg; filter: drop-shadow(0 5px 6px rgba(11, 79, 108, .35)); }
+  .kepiting    { bottom: 6%; right: -6px; width: 76px; animation-duration: 6s;  animation-delay: .3s; filter: drop-shadow(0 5px 6px rgba(11, 79, 108, .35)); }
 
   /* ── Header: plakat kayu ala papan nama kelas ── */
   header.papan-kayu {
@@ -397,10 +406,17 @@
   }
 
   .hint {
+    position: relative;
+    z-index: 1;
     text-align: center;
     color: var(--ink-soft);
     font-size: .95rem;
     font-weight: 400;
+    background: rgba(255, 247, 224, .85);
+    border-radius: 999px;
+    padding: 4px 10px;
+    width: fit-content;
+    margin: 0 auto;
   }
 
   .manual-wrap { position: relative; z-index: 1; border: none; }
@@ -413,7 +429,11 @@
     cursor: pointer;
     font-size: .88rem;
     color: var(--ink-soft);
-    padding: 6px;
+    padding: 6px 14px;
+    background: rgba(255, 247, 224, .85);
+    border-radius: 999px;
+    width: fit-content;
+    margin: 0 auto;
     user-select: none;
   }
   .manual-wrap summary::-webkit-details-marker { display: none; }
@@ -581,19 +601,6 @@
     </g>
   </svg>
 
-  <!-- Kura-kura -->
-  <svg class="mahluk kura-kura" viewBox="0 0 130 120" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="65" cy="65" rx="40" ry="32" fill="#6FA84B"/>
-    <path d="M65 35 L84 51 L84 80 L65 96 L46 80 L46 51 Z" fill="#4F8C3B" stroke="#3B6B2C" stroke-width="2"/>
-    <path d="M65 35 L65 96 M46 51 L84 51 M46 80 L84 80" stroke="#3B6B2C" stroke-width="1.4"/>
-    <ellipse cx="28" cy="62" rx="15" ry="12" fill="#8BC168"/>
-    <circle cx="21" cy="59" r="3.2" fill="#16324A"/>
-    <path d="M19 68 Q26 72 32 68" stroke="#16324A" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <ellipse cx="43" cy="99" rx="10" ry="6" fill="#8BC168"/>
-    <ellipse cx="87" cy="99" rx="10" ry="6" fill="#8BC168"/>
-    <ellipse cx="103" cy="55" rx="9" ry="7" fill="#8BC168"/>
-  </svg>
-
   <!-- Gurita -->
   <svg class="mahluk gurita" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg">
     <path d="M30 78 Q19 100 27 119 Q36 108 40 91 Z" fill="#F0917A"/>
@@ -611,7 +618,33 @@
     <circle cx="95" cy="62" r="5.5" fill="#FF9FB3" opacity=".5"/>
   </svg>
 
-  <!-- Kepiting -->
+  <!-- Ubur-ubur -->
+  <svg class="mahluk ubur-ubur" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 55 Q15 15 50 15 Q85 15 85 55 Q70 66 50 61 Q30 66 15 55 Z" fill="#F3A6D6" opacity=".85"/>
+    <circle cx="35" cy="37" r="4" fill="#FFFFFF" opacity=".6"/>
+    <circle cx="62" cy="32" r="3" fill="#FFFFFF" opacity=".6"/>
+    <path d="M25 61 Q22 82 28 100" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M42 63 Q40 86 46 106" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M60 63 Q62 86 56 106" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M76 61 Q79 82 73 100" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
+  </svg>
+</div>
+
+<div class="dekor-depan" aria-hidden="true">
+  <!-- Kura-kura (di depan) -->
+  <svg class="mahluk kura-kura" viewBox="0 0 130 120" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="65" cy="65" rx="40" ry="32" fill="#6FA84B"/>
+    <path d="M65 35 L84 51 L84 80 L65 96 L46 80 L46 51 Z" fill="#4F8C3B" stroke="#3B6B2C" stroke-width="2"/>
+    <path d="M65 35 L65 96 M46 51 L84 51 M46 80 L84 80" stroke="#3B6B2C" stroke-width="1.4"/>
+    <ellipse cx="28" cy="62" rx="15" ry="12" fill="#8BC168"/>
+    <circle cx="21" cy="59" r="3.2" fill="#16324A"/>
+    <path d="M19 68 Q26 72 32 68" stroke="#16324A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="43" cy="99" rx="10" ry="6" fill="#8BC168"/>
+    <ellipse cx="87" cy="99" rx="10" ry="6" fill="#8BC168"/>
+    <ellipse cx="103" cy="55" rx="9" ry="7" fill="#8BC168"/>
+  </svg>
+
+  <!-- Kepiting (di depan) -->
   <svg class="mahluk kepiting" viewBox="0 0 150 110" xmlns="http://www.w3.org/2000/svg">
     <path d="M45 88 L36 101 M55 92 L48 105 M95 92 L102 105 M105 88 L114 101" stroke="#D8402E" stroke-width="4.5" stroke-linecap="round"/>
     <path d="M30 35 Q18 20 6 27 Q13 41 26 45 Q15 47 9 58 Q26 61 35 49 Z" fill="#D8402E"/>
@@ -624,17 +657,6 @@
     <circle cx="90" cy="46" r="9.5" fill="#FFFFFF"/>
     <circle cx="90" cy="47" r="4.8" fill="#16324A"/>
     <path d="M61 66 Q75 74 89 66" stroke="#8C1F12" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-  </svg>
-
-  <!-- Ubur-ubur -->
-  <svg class="mahluk ubur-ubur" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15 55 Q15 15 50 15 Q85 15 85 55 Q70 66 50 61 Q30 66 15 55 Z" fill="#F3A6D6" opacity=".85"/>
-    <circle cx="35" cy="37" r="4" fill="#FFFFFF" opacity=".6"/>
-    <circle cx="62" cy="32" r="3" fill="#FFFFFF" opacity=".6"/>
-    <path d="M25 61 Q22 82 28 100" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
-    <path d="M42 63 Q40 86 46 106" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
-    <path d="M60 63 Q62 86 56 106" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
-    <path d="M76 61 Q79 82 73 100" stroke="#F3A6D6" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>
   </svg>
 </div>
 
