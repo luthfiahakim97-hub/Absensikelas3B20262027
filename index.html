@@ -411,6 +411,10 @@
     aspect-ratio: 1 / 1;
     z-index: 5;
     pointer-events: none;
+    /* Gray-out area di LUAR kotak — meniru shading bawaan library,
+       dipotong otomatis oleh overflow:hidden #reader-wrap jadi rapi
+       mengikuti sudut membulat kamera */
+    box-shadow: 0 0 0 2000px rgba(16, 20, 28, .5);
   }
   .target-qr .sudut {
     position: absolute;
