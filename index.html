@@ -105,10 +105,10 @@
     0%, 100% { transform: translateY(0) rotate(var(--miring, 0deg)); }
     50% { transform: translateY(-9px) rotate(var(--miring, 0deg)); }
   }
-  .lumba-lumba { top: -1%;  left: -30px;  width: 96px;  animation-duration: 6.5s; --miring: -6deg; }
   .gurita      { bottom: 1%;  left: -34px;  width: 92px; animation-duration: 8s;  animation-delay: 1.1s; }
   .ubur-ubur   { top: 32%; right: 2px;    width: 44px;  opacity: .6; animation-duration: 5.5s; animation-delay: .9s; }
-  /* Kura-kura & kepiting: di dekor-depan, tampil paling depan menimpa kartu */
+  /* Lumba-lumba, kura-kura & kepiting: di dekor-depan, tampil paling depan menimpa kartu */
+  .lumba-lumba { top: 1%;   left: -10px;  width: 86px; animation-duration: 6.5s; --miring: -8deg; filter: drop-shadow(0 5px 6px rgba(11, 79, 108, .35)); }
   .kura-kura   { top: 2%;   right: -6px;  width: 74px; animation-duration: 7.5s; animation-delay: .6s; --miring: 4deg; filter: drop-shadow(0 5px 6px rgba(11, 79, 108, .35)); }
   .kepiting    { bottom: 6%; right: -6px; width: 76px; animation-duration: 6s;  animation-delay: .3s; filter: drop-shadow(0 5px 6px rgba(11, 79, 108, .35)); }
 
@@ -585,22 +585,6 @@
 </div>
 
 <div class="dekor-karakter" aria-hidden="true">
-  <!-- Lumba-lumba -->
-  <svg class="mahluk lumba-lumba" viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
-    <g transform="rotate(-12 70 60)">
-      <ellipse cx="70" cy="62" rx="42" ry="24" fill="#5B8FC7"/>
-      <ellipse cx="30" cy="58" rx="16" ry="11" fill="#5B8FC7"/>
-      <ellipse cx="76" cy="73" rx="24" ry="11" fill="#EAF6FB"/>
-      <path d="M55 40 Q62 18 73 40 Z" fill="#3E6EA5"/>
-      <path d="M106 54 Q128 42 132 58 Q120 61 111 63 Z" fill="#5B8FC7"/>
-      <path d="M106 68 Q128 78 132 58 Q118 59 111 63 Z" fill="#3E6EA5"/>
-      <path d="M58 78 Q66 92 78 80 Q68 76 58 78 Z" fill="#3E6EA5"/>
-      <circle cx="34" cy="54" r="3.4" fill="#16324A"/>
-      <path d="M27 62 Q34 67 41 62" stroke="#16324A" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <circle cx="25" cy="60" r="4.5" fill="#FF9FB3" opacity=".55"/>
-    </g>
-  </svg>
-
   <!-- Gurita -->
   <svg class="mahluk gurita" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg">
     <path d="M30 78 Q19 100 27 119 Q36 108 40 91 Z" fill="#F0917A"/>
@@ -631,6 +615,22 @@
 </div>
 
 <div class="dekor-depan" aria-hidden="true">
+  <!-- Lumba-lumba (di depan) -->
+  <svg class="mahluk lumba-lumba" viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+    <g transform="rotate(-12 70 60)">
+      <ellipse cx="70" cy="62" rx="42" ry="24" fill="#5B8FC7"/>
+      <ellipse cx="30" cy="58" rx="16" ry="11" fill="#5B8FC7"/>
+      <ellipse cx="76" cy="73" rx="24" ry="11" fill="#EAF6FB"/>
+      <path d="M55 40 Q62 18 73 40 Z" fill="#3E6EA5"/>
+      <path d="M106 54 Q128 42 132 58 Q120 61 111 63 Z" fill="#5B8FC7"/>
+      <path d="M106 68 Q128 78 132 58 Q118 59 111 63 Z" fill="#3E6EA5"/>
+      <path d="M58 78 Q66 92 78 80 Q68 76 58 78 Z" fill="#3E6EA5"/>
+      <circle cx="34" cy="54" r="3.4" fill="#16324A"/>
+      <path d="M27 62 Q34 67 41 62" stroke="#16324A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="25" cy="60" r="4.5" fill="#FF9FB3" opacity=".55"/>
+    </g>
+  </svg>
+
   <!-- Kura-kura (di depan) -->
   <svg class="mahluk kura-kura" viewBox="0 0 130 120" xmlns="http://www.w3.org/2000/svg">
     <ellipse cx="65" cy="65" rx="40" ry="32" fill="#6FA84B"/>
